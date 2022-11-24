@@ -8,6 +8,17 @@ const rl = readline.createInterface({
   output: process.stdout
 })
 
+function onlySpaces(str) 
+{
+    return str.trim().length === 0
+}
+
+function isIp(str)
+{
+    const regexExp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/gi
+    return regexExp.test(str)
+}
+
 async function mainList()
 {
     console.clear()
@@ -18,7 +29,7 @@ async function mainList()
 
     if(await fs.existsSync(os.homedir() + '\\.ssh\\saved_servers'))
     {
-        console.log('Used config file: ~/.ssh/saved_servers\n')
+        console.log(' Used config file: ~/.ssh/saved_servers\n')
 
         console.log('------------------ SERVER ------------------\n')
         
@@ -28,10 +39,12 @@ async function mainList()
 
         for(var server in localSavedServers)
         {
-            console.log('\t' + id + ': ' + localSavedServers[server]['name'])
-            savedServers[id] = localSavedServers[server]
+            savedServers[server] = localSavedServers[server]
+            savedServers[server]['id'] = id
+            console.log(' ' + id + ': ' + server)
             id++
         }
+        savedServers = localSavedServers
 
         console.log('')
 
@@ -39,10 +52,10 @@ async function mainList()
     }
     else
     {
-        console.log('No config file found\n')
+        console.log(' No config file found\n')
     }
 
-    return savedServers, configPresent
+    return { savedServers, configPresent }
 }
 
 async function listOptions(configPresent)
@@ -62,24 +75,24 @@ async function listOptions(configPresent)
 
     if(configPresent)
     {
-        console.log(optionId + ': Connect to server via SSH')
+        console.log(' ' + optionId + ': Connect to server via SSH')
         options[optionId] = 'ConServer'
         optionId++
     }
 
-    console.log(optionId + ': Add new server')
+    console.log(' ' + optionId + ': Add new server')
     options[optionId] = 'AddServer'
     optionId++
 
-    console.log(optionId + ': Info about server')
+    console.log(' ' + optionId + ': Info about server')
     options[optionId] = 'InfServer'
     optionId++
 
-    console.log(optionId + ': Remove server')
+    console.log(' ' + optionId + ': Remove server')
     options[optionId] = 'DelServer'
     optionId++
 
-    console.log(optionId + ': Cluster command')
+    console.log(' ' + optionId + ': Cluster command')
     options[optionId] = 'CluCom'
     optionId++
 
@@ -108,21 +121,103 @@ async function conToServer(Servers)
     
 }
 
-async function addServer(Servers, configPresent)
+async function addServer(savedServers)
 {
-    var getInfoMessage = 'Please input a name:'
+    var getInfoMessage = '\n'
     do {
         await mainList()
-        console.log('------------- ADD NEW SERVER ---------------\n')
+        console.log('------------- ADD NEW SERVER ---------------')
         displayMessage(getInfoMessage)
-        var serverName = await readCli('- ')
-    } while(configPresent && Servers.hasOwnProperty(serverName))
-    console.log('yay')
+        var serverName = await readCli(' Server name: ')
+
+        getInfoMessage = ' Name is already in use!\n'
+        if(onlySpaces(serverName))
+        {
+            getInfoMessage = ' Name can\'t be blank!\n'
+        }
+        console.log(serverName)
+        console.log(savedServers)
+    } while(savedServers.hasOwnProperty(serverName) || onlySpaces(serverName))
+
+    getInfoMessage = '\n\n Server name: ' + serverName
+
+    do
+    {
+        await mainList()
+        console.log('------------- ADD NEW SERVER ---------------')
+        displayMessage(getInfoMessage)
+        var serverIp = await readCli(' Server IP: ')
+
+        getInfoMessage = ' Enter valid IP!\n\n Server name: ' + serverName
+    } while(!isIp(serverIp))
+
+    getInfoMessage = '\n\n Server name: ' + serverName + '\n Server IP: ' + serverIp + '\n\n Server was saved to config file'
+
+    savedServers[serverName] = {
+        'ip': serverIp
+    }
+    fs.writeFileSync(os.homedir() + '\\.ssh\\saved_servers', JSON.stringify(savedServers));
+
+    await mainList()
+    console.log('------------- ADD NEW SERVER ---------------')
+    displayMessage(getInfoMessage)
+}
+
+function checkForId(Servers, id)
+{
+    for(var server in Servers)
+    {
+        if(Servers[server]['id'] == id)
+        {
+            return true
+        }
+    }
+    return false
+}
+
+function idToServer(Servers, id)
+{
+    for(var server in Servers)
+    {
+        if(Servers[server]['id'] == id)
+        {
+            return server
+        }
+    }
+    return null
 }
 
 async function infoServer(Servers)
 {
-    
+    do
+    {
+        var idValid = true
+
+        await mainList()
+        console.log('--------------- SERVER INFO ----------------\n')
+        var serverId = await readCli(' Server ID: ')
+        if(parseInt(serverId) == NaN)
+        {
+            idValid = false
+        }
+
+        if(!checkForId(Servers, serverId))
+        {
+            idValid = false
+        }
+    } while(!idValid)
+
+    var idValid = true
+
+    await mainList()
+    console.log('--------------- SERVER INFO ----------------\n')
+
+    const server = idToServer(Servers, serverId)
+
+    var optionsMessage = ' Name: ' + server + '\n IP: ' + Servers[server]['ip']
+
+    displayMessage(optionsMessage)
+    await readCli('')
 }
 
 async function delServer(Servers)
@@ -156,17 +251,16 @@ const readCli = prompt => {
 
 async function main()
 {
-    var optionsMessage = 'Please choose one of the above'
+    var optionsMessage = ' Please choose one of the above'
+    
     do {
-        var Servers, configFilePresent = await mainList()
-        var options = await listOptions(configFilePresent)
+        var { savedServers, configPresent } = await mainList()
+        var options = await listOptions(configPresent)
         displayMessage(optionsMessage)
-        var option = await readCli('- ')
+        var option = await readCli(' - ')
     } while(idToOption(options, option) == 'invOpt')
     optFunc = await OptToFunc(idToOption(options, option))
-    console.log(idToOption(options, option))
-    console.log(optFunc)
-    optFunc(Servers, configFilePresent)
+    optFunc(savedServers)
     
 }
 
