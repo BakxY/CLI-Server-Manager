@@ -14,13 +14,14 @@ async function mainList()
     console.log('------------ SSH SERVER MANAGER ------------\n')
 
     var savedServers = {}
+    var configPresent = false
 
     if(await fs.existsSync(os.homedir() + '\\.ssh\\saved_servers'))
     {
         console.log('Used config file: ~/.ssh/saved_servers\n')
 
         console.log('------------------ SERVER ------------------\n')
-
+        
         const localSavedServers = await JSON.parse(await fs.promises.readFile(os.homedir() + '\\.ssh\\saved_servers', 'utf8'))
 
         var id = 1
@@ -33,16 +34,18 @@ async function mainList()
         }
 
         console.log('')
+
+        configPresent = true
     }
     else
     {
         console.log('No config file found\n')
     }
 
-    return savedServers
+    return savedServers, configPresent
 }
 
-async function listOptions(Servers)
+async function listOptions(configPresent)
 {
     /* 
     * All Options:
@@ -57,7 +60,7 @@ async function listOptions(Servers)
     var optionId = 1
     var options = {}
 
-    if(Servers != {})
+    if(configPresent)
     {
         console.log(optionId + ': Connect to server via SSH')
         options[optionId] = 'ConServer'
@@ -95,9 +98,54 @@ function idToOption(options, id)
     }
 }
 
-async function conToServer()
+async function displayMessage(message)
+{
+    console.log('\n' + message)
+}
+
+async function conToServer(Servers)
 {
     
+}
+
+async function addServer(Servers, configPresent)
+{
+    var getInfoMessage = 'Please input a name:'
+    do {
+        await mainList()
+        console.log('------------- ADD NEW SERVER ---------------\n')
+        displayMessage(getInfoMessage)
+        var serverName = await readCli('- ')
+    } while(configPresent && Servers.hasOwnProperty(serverName))
+    console.log('yay')
+}
+
+async function infoServer(Servers)
+{
+    
+}
+
+async function delServer(Servers)
+{
+    
+}
+
+async function cluCom(Servers)
+{
+    
+}
+
+function OptToFunc(option)
+{
+    const funcList = {
+        'ConServer': conToServer,
+        'AddServer': addServer,
+        'InfServer': infoServer,
+        'DelServer': delServer,
+        'CluCom': cluCom
+    }
+
+    return funcList[option]
 }
 
 const readCli = prompt => {
@@ -108,11 +156,17 @@ const readCli = prompt => {
 
 async function main()
 {
+    var optionsMessage = 'Please choose one of the above'
     do {
-        var Servers = await mainList()
-        var options = await listOptions(Servers)
-        var option = await readCli('\n- ')
+        var Servers, configFilePresent = await mainList()
+        var options = await listOptions(configFilePresent)
+        displayMessage(optionsMessage)
+        var option = await readCli('- ')
     } while(idToOption(options, option) == 'invOpt')
+    optFunc = await OptToFunc(idToOption(options, option))
+    console.log(idToOption(options, option))
+    console.log(optFunc)
+    optFunc(Servers, configFilePresent)
     
 }
 
