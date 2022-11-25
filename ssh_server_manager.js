@@ -1,6 +1,7 @@
 // exec("start cmd /c ssh root@192.168.50.132")
 const fs = require('fs');
-const os = require('os')
+const os = require('os');
+const { exit } = require('process');
 const readline = require('readline')
 
 const rl = readline.createInterface({
@@ -67,6 +68,7 @@ async function listOptions(configPresent)
     * DelServer = Remove a server from the config
     * InfServer = Info about a server
     * CluCom = Execute a command on all given servers
+    * Exit = Leave the script
     */
     console.log('----------------- OPTIONS ------------------\n')
 
@@ -94,6 +96,10 @@ async function listOptions(configPresent)
 
     console.log(' ' + optionId + ': Cluster command')
     options[optionId] = 'CluCom'
+    optionId++
+
+    console.log(' ' + optionId + ': Exit')
+    options[optionId] = 'Exit'
     optionId++
 
     return options
@@ -207,8 +213,6 @@ async function infoServer(Servers)
         }
     } while(!idValid)
 
-    var idValid = true
-
     await mainList()
     console.log('--------------- SERVER INFO ----------------\n')
 
@@ -222,12 +226,72 @@ async function infoServer(Servers)
 
 async function delServer(Servers)
 {
-    
+    do
+    {
+        var idValid = true
+
+        await mainList()
+        console.log('-------------- DELETE SERVER ---------------\n')
+        var serverId = await readCli(' Server ID: ')
+        if(parseInt(serverId) == NaN)
+        {
+            idValid = false
+        }
+
+        if(!checkForId(Servers, serverId))
+        {
+            idValid = false
+        }
+    } while(!idValid)
+
+    var delOpt
+    var server
+
+    do
+    {
+        var idValid = true
+
+        await mainList()
+        console.log('-------------- DELETE SERVER ---------------')
+
+        server = idToServer(Servers, serverId)
+
+        var optionsMessage = ' Name: ' + server + '\n IP: ' + Servers[server]['ip']
+
+        displayMessage(optionsMessage)
+        delOpt = await readCli('\n Delete this server (y/n): ')
+
+        if(delOpt == 'y' || delOpt == 'n')
+        {
+            idValid = false
+        }
+    } while(idValid)
+
+    var optionsMessage = ' Aborted'
+
+    if(delOpt == 'y')
+    {
+        delete Servers[server]
+        optionsMessage = ' Server was removed'
+    }
+
+    fs.writeFileSync(os.homedir() + '\\.ssh\\saved_servers', JSON.stringify(Servers));
+
+    await mainList()
+    console.log('-------------- DELETE SERVER ---------------')
+    displayMessage(optionsMessage)
+    await readCli('')
 }
 
 async function cluCom(Servers)
 {
     
+}
+
+async function exitScr(Servers)
+{
+    console.clear()
+    console.log('\n Left the ssh manager script')
 }
 
 function OptToFunc(option)
@@ -237,7 +301,8 @@ function OptToFunc(option)
         'AddServer': addServer,
         'InfServer': infoServer,
         'DelServer': delServer,
-        'CluCom': cluCom
+        'CluCom': cluCom,
+        'Exit': exitScr
     }
 
     return funcList[option]
@@ -251,17 +316,23 @@ const readCli = prompt => {
 
 async function main()
 {
-    var optionsMessage = ' Please choose one of the above'
-    
-    do {
-        var { savedServers, configPresent } = await mainList()
-        var options = await listOptions(configPresent)
-        displayMessage(optionsMessage)
-        var option = await readCli(' - ')
-    } while(idToOption(options, option) == 'invOpt')
-    optFunc = await OptToFunc(idToOption(options, option))
-    optFunc(savedServers)
-    
+    while(true)
+    {
+        var optionsMessage = ' Please choose one of the above'
+        
+        do {
+            var { savedServers, configPresent } = await mainList()
+            var options = await listOptions(configPresent)
+            displayMessage(optionsMessage)
+            var option = await readCli(' - ')
+        } while(idToOption(options, option) == 'invOpt')
+        optFunc = await OptToFunc(idToOption(options, option))
+        await optFunc(savedServers)
+        if(idToOption(options, option) == 'Exit')
+        {
+            exit();
+        }
+    }
 }
 
 main()
