@@ -1,8 +1,10 @@
 // exec("start cmd /c ssh root@192.168.50.132")
-const fs = require('fs');
-const os = require('os');
-const { exit } = require('process');
+const fs = require('fs')
+const os = require('os')
+const { exit } = require('process')
+const { exec } = require("child_process")
 const readline = require('readline')
+const { consumers } = require('stream')
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -18,6 +20,19 @@ function isIp(str)
 {
     const regexExp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/gi
     return regexExp.test(str)
+}
+
+const readCli = prompt => {
+    return new Promise((resolve, reject) => {
+        rl.question(prompt, resolve)
+    })
+}
+
+async function sleep(time)
+{
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, time)
+    })
 }
 
 async function mainList()
@@ -124,7 +139,28 @@ async function displayMessage(message)
 
 async function conToServer(Servers)
 {
-    
+    var serverId
+    do
+    {
+        var idValid = true
+
+        await mainList()
+        console.log('--------------- SERVER INFO ----------------\n')
+        serverId = await readCli(' Server ID: ')
+        if(parseInt(serverId) == NaN)
+        {
+            idValid = false
+        }
+
+        if(!checkForId(Servers, serverId))
+        {
+            idValid = false
+        }
+    } while(!idValid)
+
+    console.log(Servers[idToServer(Servers, serverId)]['ip'])
+
+    exec("start cmd /c ssh root@" + Servers[idToServer(Servers, serverId)]['ip'])
 }
 
 async function addServer(savedServers)
@@ -280,7 +316,7 @@ async function delServer(Servers)
     await mainList()
     console.log('-------------- DELETE SERVER ---------------')
     displayMessage(optionsMessage)
-    await readCli('')
+    await sleep(500)
 }
 
 async function cluCom(Servers)
@@ -306,12 +342,6 @@ function OptToFunc(option)
     }
 
     return funcList[option]
-}
-
-const readCli = prompt => {
-    return new Promise((resolve, reject) => {
-        rl.question(prompt, resolve)
-    })
 }
 
 async function main()
