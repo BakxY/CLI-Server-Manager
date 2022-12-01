@@ -1,10 +1,10 @@
 // exec("start cmd /c ssh root@192.168.50.132")
+// exec('start "Cluster command on 192.168.50.132" cmd /k "echo off && cls && ssh root@192.168.50.132 date; exit"')
 const fs = require('fs')
 const os = require('os')
 const { exit } = require('process')
 const { exec } = require("child_process")
 const readline = require('readline')
-const { consumers } = require('stream')
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -321,7 +321,24 @@ async function delServer(Servers)
 
 async function cluCom(Servers)
 {
-    
+    do
+    {
+        var idValid = true
+
+        await mainList()
+        console.log('------------- CLUSTER COMMAND --------------\n')
+        var serverIdList = await readCli(' Server IDs (sep. by ,): ')
+
+        if(parseInt(serverId) == NaN)
+        {
+            idValid = false
+        }
+
+        if(!checkForId(Servers, serverId))
+        {
+            idValid = false
+        }
+    } while(!idValid)
 }
 
 async function exitScr(Servers)
