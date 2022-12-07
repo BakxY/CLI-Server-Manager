@@ -1,5 +1,3 @@
-// exec("start cmd /c ssh root@192.168.50.132")
-// exec('start "Cluster command on 192.168.50.132" cmd /k "echo off && cls && ssh root@192.168.50.132 date; exit"')
 const fs = require('fs')
 const os = require('os')
 const { exit } = require('process')
