@@ -321,24 +321,57 @@ async function delServer(Servers)
 
 async function cluCom(Servers)
 {
+    var serverIdList
+
     do
     {
         var idValid = true
 
         await mainList()
         console.log('------------- CLUSTER COMMAND --------------\n')
-        var serverIdList = await readCli(' Server IDs (sep. by ,): ')
+        serverIdList = await readCli(' Server IDs (sep. by ,): ')
+        serverIdList = serverIdList.split(',')
 
-        if(parseInt(serverId) == NaN)
+        for(var id in serverIdList)
         {
-            idValid = false
-        }
+            if(parseInt(serverIdList[id]) == NaN)
+            {
+                idValid = false
+            }
 
-        if(!checkForId(Servers, serverId))
-        {
-            idValid = false
+            if(!checkForId(Servers, serverIdList[id]))
+            {
+                idValid = false
+            }
         }
     } while(!idValid)
+
+    var command
+
+    do
+    {
+        var execCommand = true
+
+        await mainList()
+        console.log('------------- CLUSTER COMMAND --------------\n')
+        command = await readCli(' Command: ')
+
+        await mainList()
+        console.log('------------- CLUSTER COMMAND --------------\n')
+        var execOpt = await readCli(' Do you want to execute "' + command + '" on every selected server (y/n): ')
+        if(execOpt != 'y')
+        {
+            execCommand = false
+        }
+    } while(!execCommand)
+
+    for(var id in serverIdList)
+    {
+        console.log(Servers[idToServer(Servers, serverIdList[id])]['ip'])
+        console.log(idToServer(Servers, serverIdList[id]))
+
+        exec('start "Cluster command on ' + idToServer(Servers, serverIdList[id]) + '" cmd /k "echo off && cls && ssh root@' + Servers[idToServer(Servers, serverIdList[id])]['ip'] + ' ' + command + '; exit"')
+    }
 }
 
 async function exitScr(Servers)
