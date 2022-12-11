@@ -3,6 +3,7 @@
 A tool for managing connections via ssh to your servers.
 
 ![Main-Menu](img/mainMenu.png)
+
 ![Server-Info](img/server_info.png)
 
 ## Why?
