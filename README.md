@@ -2,6 +2,9 @@
 
 A tool for managing connections via ssh to your servers.
 
+![Main-Menu](img/mainMenu.png)
+![Server-Info](img/server_info.png)
+
 ## Why?
 
 I used Putty for managing my servers since I can remember. But as I got more and more into the linux, I learned the power of just a keyboard and how it can boot productivity. With Putty I had to use my mouse to connect to servers. So I created this tool to easily connect to my server trough a cli tool. 
