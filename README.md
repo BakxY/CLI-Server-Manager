@@ -2,7 +2,7 @@
 
 A tool for managing connections via ssh to your servers.
 
-![Main-Menu](img/mainMenu.png)
+![Main-Menu](img/main_menu.png)
 
 ![Server-Info](img/server_info.png)
 
