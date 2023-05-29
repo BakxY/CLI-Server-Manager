@@ -156,9 +156,7 @@ async function conToServer(Servers)
         }
     } while(!idValid)
 
-    console.log(Servers[idToServer(Servers, serverId)]['ip'])
-
-    exec("start cmd /c ssh root@" + Servers[idToServer(Servers, serverId)]['ip'])
+    exec("start cmd /c ssh " + Servers[idToServer(Servers, serverId)]['user'] + "@" + Servers[idToServer(Servers, serverId)]['ip'])
 }
 
 async function addServer(savedServers)
@@ -191,10 +189,18 @@ async function addServer(savedServers)
         getInfoMessage = ' Enter valid IP!\n\n Server name: ' + serverName
     } while(!isIp(serverIp))
 
-    getInfoMessage = '\n\n Server name: ' + serverName + '\n Server IP: ' + serverIp + '\n\n Server was saved to config file'
+    getInfoMessage = '\n\n Server name: ' + serverName + '\n Server IP: ' + serverIp
+
+    await mainList()
+    console.log('------------- ADD NEW SERVER ---------------')
+    displayMessage(getInfoMessage)
+    var serverUsername = await readCli(' Server Username: ')
+
+    getInfoMessage = '\n\n Server name: ' + serverName + '\n Server IP: ' + serverIp + '\n Username: ' + serverIp + '\n\n Server was saved to config file'
 
     savedServers[serverName] = {
-        'ip': serverIp
+        'ip': serverIp,
+        'user': serverUsername
     }
     fs.writeFileSync(os.homedir() + '\\.ssh\\saved_servers', JSON.stringify(savedServers));
 
@@ -252,7 +258,7 @@ async function infoServer(Servers)
 
     const server = idToServer(Servers, serverId)
 
-    var optionsMessage = ' Name: ' + server + '\n IP: ' + Servers[server]['ip']
+    var optionsMessage = ' Name: ' + server + '\n IP: ' + Servers[server]['ip'] + '\n User: ' + Servers[server]['user']
 
     displayMessage(optionsMessage)
     await readCli('')
@@ -368,7 +374,7 @@ async function cluCom(Servers)
         console.log(Servers[idToServer(Servers, serverIdList[id])]['ip'])
         console.log(idToServer(Servers, serverIdList[id]))
 
-        exec('start "Cluster command on ' + idToServer(Servers, serverIdList[id]) + '" cmd /k "echo off && cls && ssh root@' + Servers[idToServer(Servers, serverIdList[id])]['ip'] + ' ' + command + '; exit"')
+        exec('start "Cluster command on ' + idToServer(Servers, serverIdList[id]) + '" cmd /k "echo off && cls && ssh ' + Servers[idToServer(Servers, serverIdList[id])]['user'] + '@' + Servers[idToServer(Servers, serverIdList[id])]['ip'] + ' ' + command + '; exit"')
     }
 }
 
@@ -404,8 +410,11 @@ async function main()
             displayMessage(optionsMessage)
             var option = await readCli(' - ')
         } while(idToOption(options, option) == 'invOpt')
+
         optFunc = await OptToFunc(idToOption(options, option))
+
         await optFunc(savedServers)
+
         if(idToOption(options, option) == 'Exit')
         {
             exit();
