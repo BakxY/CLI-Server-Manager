@@ -9,6 +9,9 @@ const rl = readline.createInterface({
   output: process.stdout
 })
 
+//If your private key is in a different location, you can change the path here
+const SSHPrivateKeyPath = "%userprofile%/.ssh/id_rsa.ppk"
+
 function onlySpaces(str) 
 {
     return str.trim().length === 0
@@ -77,6 +80,7 @@ async function listOptions(configPresent)
     /* 
     * All Options:
     * ConServer = Connect to server
+    * ConServerSFTP = Connect to server via sftp
     * AddServer = Add a new server to the config
     * DelServer = Remove a server from the config
     * InfServer = Info about a server
@@ -92,6 +96,10 @@ async function listOptions(configPresent)
     {
         console.log(' ' + optionId + ': Connect to server via SSH')
         options[optionId] = 'ConServer'
+        optionId++
+
+        console.log(' ' + optionId + ': Connect to server via SFTP')
+        options[optionId] = 'ConSFTP'
         optionId++
     }
 
@@ -157,6 +165,31 @@ async function conToServer(Servers)
     } while(!idValid)
 
     exec("start cmd /c ssh " + Servers[idToServer(Servers, serverId)]['user'] + "@" + Servers[idToServer(Servers, serverId)]['ip'])
+}
+
+async function conSFTP(Servers)
+{
+    var serverId
+
+    do
+    {
+        var idValid = true
+
+        await mainList()
+        console.log('--------------- SERVER INFO ----------------\n')
+        serverId = await readCli(' Server ID: ')
+        if(parseInt(serverId) == NaN)
+        {
+            idValid = false
+        }
+
+        if(!checkForId(Servers, serverId))
+        {
+            idValid = false
+        }
+    } while(!idValid)
+
+    exec("WinSCP.exe " + Servers[idToServer(Servers, serverId)]['user'] + "@" + Servers[idToServer(Servers, serverId)]['ip'] + ' /privatekey=' + SSHPrivateKeyPath)
 }
 
 async function addServer(savedServers)
@@ -388,6 +421,7 @@ function OptToFunc(option)
 {
     const funcList = {
         'ConServer': conToServer,
+        'ConSFTP': conSFTP,
         'AddServer': addServer,
         'InfServer': infoServer,
         'DelServer': delServer,
