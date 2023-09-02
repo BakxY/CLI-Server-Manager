@@ -18,17 +18,3 @@ I wanted to create a easily installable tool, so I only used packages that are p
 ## I'm missing a feature
 
 If your missing anything in this tool, that would be beneficial to your workflow. Please create a issue, so I can add it to the tool asap
-
-## Install??
-
-### Windows
-
-WIP
-
-### Linux
-
-WIP
-
-### Mac
-
-I sadly don't have a mac, so I can't give you an example install on macOs. If anybody has a mac and install this tool. It would be welcomed if you document the steps and create a PR in this repo
