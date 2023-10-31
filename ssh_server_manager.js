@@ -407,7 +407,7 @@ async function cluCom(Servers)
         console.log(Servers[idToServer(Servers, serverIdList[id])]['ip'])
         console.log(idToServer(Servers, serverIdList[id]))
 
-        exec('start "Cluster command on ' + idToServer(Servers, serverIdList[id]) + '" cmd /k "echo off && cls && ssh ' + Servers[idToServer(Servers, serverIdList[id])]['user'] + '@' + Servers[idToServer(Servers, serverIdList[id])]['ip'] + ' ' + command + '; exit"')
+        exec('start "Cluster command on ' + idToServer(Servers, serverIdList[id]) + '" cmd /k "echo off && cls && ssh ' + Servers[idToServer(Servers, serverIdList[id])]['user'] + '@' + Servers[idToServer(Servers, serverIdList[id])]['ip'] + ' ' + command + '; exit" && echo Done')
     }
 }
 
