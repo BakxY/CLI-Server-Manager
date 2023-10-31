@@ -4,6 +4,8 @@ const { exit } = require('process')
 const { exec } = require("child_process")
 const readline = require('readline')
 
+const regexExp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/gi
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -19,7 +21,6 @@ function onlySpaces(str)
 
 function isIp(str)
 {
-    const regexExp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/gi
     return regexExp.test(str)
 }
 
@@ -407,7 +408,10 @@ async function cluCom(Servers)
         console.log(Servers[idToServer(Servers, serverIdList[id])]['ip'])
         console.log(idToServer(Servers, serverIdList[id]))
 
-        exec('start "Cluster command on ' + idToServer(Servers, serverIdList[id]) + '" cmd /k "echo off && cls && ssh ' + Servers[idToServer(Servers, serverIdList[id])]['user'] + '@' + Servers[idToServer(Servers, serverIdList[id])]['ip'] + ' ' + command + '; exit" && echo Done')
+        var titleString = 'Cluster command on ' + idToServer(Servers, serverIdList[id])
+        var conString = 'cmd /k "echo off && cls && ssh ' + Servers[idToServer(Servers, serverIdList[id])]['user'] + '@' + Servers[idToServer(Servers, serverIdList[id])]['ip']
+
+        exec('start "' + titleString + '" ' + conString + ' ' + command + '; echo ------------------- DONE -------------------; exit"')
     }
 }
 
