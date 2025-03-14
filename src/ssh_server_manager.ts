@@ -1,3 +1,5 @@
+import { Function } from "estree"
+
 const fs = require('fs')
 const os = require('os')
 const { exit } = require('process')
@@ -7,56 +9,54 @@ const readline = require('readline')
 const regexExp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/gi
 
 const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
+    input: process.stdin,
+    output: process.stdout
 })
+
+type server = {
+
+}
 
 //If your private key is in a different location, you can change the path here
 const SSHPrivateKeyPath = "%userprofile%/.ssh/id_rsa.ppk"
 
-function onlySpaces(str) 
-{
+function onlySpaces(str: string): boolean {
     return str.trim().length === 0
 }
 
-function isIp(str)
-{
+function isIp(str: string): boolean {
     return regexExp.test(str)
 }
 
-const readCli = prompt => {
+async function readCli(question: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        rl.question(prompt, resolve)
+        rl.question(question, resolve)
     })
 }
 
-async function sleep(time)
-{
+async function sleep(time: number): Promise<unknown> {
     return new Promise((resolve, reject) => {
         setTimeout(resolve, time)
     })
 }
 
-async function mainList()
-{
+async function mainList() {
     console.clear()
     console.log('------------ SSH SERVER MANAGER ------------\n')
 
-    var savedServers = {}
-    var configPresent = false
+    var savedServers: any = {}
+    var configPresent: boolean = false
 
-    if(await fs.existsSync(os.homedir() + '\\.ssh\\saved_servers'))
-    {
+    if (await fs.existsSync(os.homedir() + '\\.ssh\\saved_servers')) {
         console.log(' Used config file: ~/.ssh/saved_servers\n')
 
         console.log('------------------ SERVER ------------------\n')
-        
+
         const localSavedServers = await JSON.parse(await fs.promises.readFile(os.homedir() + '\\.ssh\\saved_servers', 'utf8'))
 
         var id = 1
 
-        for(var server in localSavedServers)
-        {
+        for (var server in localSavedServers) {
             savedServers[server] = localSavedServers[server]
             savedServers[server]['id'] = id
             console.log(' ' + id + ': ' + server)
@@ -68,16 +68,14 @@ async function mainList()
 
         configPresent = true
     }
-    else
-    {
+    else {
         console.log(' No config file found\n')
     }
 
     return { savedServers, configPresent }
 }
 
-async function listOptions(configPresent)
-{
+async function listOptions(configPresent: any) {
     /* 
     * All Options:
     * ConServer = Connect to server
@@ -91,10 +89,9 @@ async function listOptions(configPresent)
     console.log('----------------- OPTIONS ------------------\n')
 
     var optionId = 1
-    var options = {}
+    var options: any = {}
 
-    if(configPresent)
-    {
+    if (configPresent) {
         console.log(' ' + optionId + ': Connect to server via SSH')
         options[optionId] = 'ConServer'
         optionId++
@@ -127,74 +124,61 @@ async function listOptions(configPresent)
     return options
 }
 
-function idToOption(options, id)
-{
-    if(options.hasOwnProperty(id))
-    {
+function idToOption(options: any, id: string): string {
+    if (options.hasOwnProperty(id)) {
         return options[id]
     }
-    else
-    {
+    else {
         return 'invOpt'
     }
 }
 
-async function displayMessage(message)
-{
+async function displayMessage(message: string) {
     console.log('\n' + message)
 }
 
-async function conToServer(Servers)
-{
-    var serverId
-    do
-    {
-        var idValid = true
+async function conToServer(Servers: any): Promise<void> {
+    var serverId: string
+    do {
+        var idValid: boolean = true
 
         await mainList()
         console.log('--------------- SERVER INFO ----------------\n')
         serverId = await readCli(' Server ID: ')
-        if(parseInt(serverId) == NaN)
-        {
+        if (Number.isNaN(serverId)) {
             idValid = false
         }
 
-        if(!checkForId(Servers, serverId))
-        {
+        if (!checkForId(Servers, serverId)) {
             idValid = false
         }
-    } while(!idValid)
+    } while (!idValid)
 
     exec("start cmd /c ssh " + Servers[idToServer(Servers, serverId)]['user'] + "@" + Servers[idToServer(Servers, serverId)]['ip'])
 }
 
-async function conSFTP(Servers)
-{
+async function conSFTP(Servers: any) {
     var serverId
 
-    do
-    {
+    do {
         var idValid = true
 
         await mainList()
         console.log('--------------- SERVER INFO ----------------\n')
         serverId = await readCli(' Server ID: ')
-        if(parseInt(serverId) == NaN)
-        {
+        if (Number.isNaN(serverId)) {
             idValid = false
         }
 
-        if(!checkForId(Servers, serverId))
-        {
+        if (!checkForId(Servers, serverId)) {
             idValid = false
         }
-    } while(!idValid)
+    } while (!idValid)
 
     exec("WinSCP.exe " + Servers[idToServer(Servers, serverId)]['user'] + "@" + Servers[idToServer(Servers, serverId)]['ip'] + ' /privatekey=' + SSHPrivateKeyPath)
 }
 
-async function addServer(savedServers)
-{
+async function addServer(savedServers: any) {
     var getInfoMessage = '\n'
     do {
         await mainList()
@@ -203,25 +187,23 @@ async function addServer(savedServers)
         var serverName = await readCli(' Server name: ')
 
         getInfoMessage = ' Name is already in use!\n'
-        if(onlySpaces(serverName))
-        {
+        if (onlySpaces(serverName)) {
             getInfoMessage = ' Name can\'t be blank!\n'
         }
         console.log(serverName)
         console.log(savedServers)
-    } while(savedServers.hasOwnProperty(serverName) || onlySpaces(serverName))
+    } while (savedServers.hasOwnProperty(serverName) || onlySpaces(serverName))
 
     getInfoMessage = '\n\n Server name: ' + serverName
 
-    do
-    {
+    do {
         await mainList()
         console.log('------------- ADD NEW SERVER ---------------')
         displayMessage(getInfoMessage)
         var serverIp = await readCli(' Server IP: ')
 
         getInfoMessage = ' Enter valid IP!\n\n Server name: ' + serverName
-    } while(!isIp(serverIp))
+    } while (!isIp(serverIp))
 
     getInfoMessage = '\n\n Server name: ' + serverName + '\n Server IP: ' + serverIp
 
@@ -243,49 +225,39 @@ async function addServer(savedServers)
     displayMessage(getInfoMessage)
 }
 
-function checkForId(Servers, id)
-{
-    for(var server in Servers)
-    {
-        if(Servers[server]['id'] == id)
-        {
+function checkForId(Servers: any, id: string) {
+    for (var server in Servers) {
+        if (Number.parseInt(Servers[server]['id']) === Number.parseInt(id)) {
             return true
         }
     }
     return false
 }
 
-function idToServer(Servers, id)
-{
-    for(var server in Servers)
-    {
-        if(Servers[server]['id'] == id)
-        {
+function idToServer(Servers: any, id: string) : string {
+    for (var server in Servers) {
+        if (Number.parseInt(Servers[server]['id']) === Number.parseInt(id)) {
             return server
         }
     }
-    return null
+    return ''
 }
 
-async function infoServer(Servers)
-{
-    do
-    {
+async function infoServer(Servers: any) {
+    do {
         var idValid = true
 
         await mainList()
         console.log('--------------- SERVER INFO ----------------\n')
-        var serverId = await readCli(' Server ID: ')
-        if(parseInt(serverId) == NaN)
-        {
+        var serverId: string = await readCli(' Server ID: ')
+        if (Number.isNaN(serverId)) {
             idValid = false
         }
 
-        if(!checkForId(Servers, serverId))
-        {
+        if (!checkForId(Servers, serverId)) {
             idValid = false
         }
-    } while(!idValid)
+    } while (!idValid)
 
     await mainList()
     console.log('--------------- SERVER INFO ----------------\n')
@@ -298,31 +270,26 @@ async function infoServer(Servers)
     await readCli('')
 }
 
-async function delServer(Servers)
-{
-    do
-    {
+async function delServer(Servers: any) {
+    do {
         var idValid = true
 
         await mainList()
         console.log('-------------- DELETE SERVER ---------------\n')
         var serverId = await readCli(' Server ID: ')
-        if(parseInt(serverId) == NaN)
-        {
+        if (Number.isNaN(serverId)) {
             idValid = false
         }
 
-        if(!checkForId(Servers, serverId))
-        {
+        if (!checkForId(Servers, serverId)) {
             idValid = false
         }
-    } while(!idValid)
+    } while (!idValid)
 
     var delOpt
     var server
 
-    do
-    {
+    do {
         var idValid = true
 
         await mainList()
@@ -335,16 +302,14 @@ async function delServer(Servers)
         displayMessage(optionsMessage)
         delOpt = await readCli('\n Delete this server (y/n): ')
 
-        if(delOpt == 'y' || delOpt == 'n')
-        {
+        if (delOpt == 'y' || delOpt == 'n') {
             idValid = false
         }
-    } while(idValid)
+    } while (idValid)
 
     var optionsMessage = ' Aborted'
 
-    if(delOpt == 'y')
-    {
+    if (delOpt == 'y') {
         delete Servers[server]
         optionsMessage = ' Server was removed'
     }
@@ -357,12 +322,10 @@ async function delServer(Servers)
     await sleep(500)
 }
 
-async function cluCom(Servers)
-{
-    var serverIdList
+async function cluCom(Servers: any) {
+    var serverIdList: any
 
-    do
-    {
+    do {
         var idValid = true
 
         await mainList()
@@ -370,24 +333,20 @@ async function cluCom(Servers)
         serverIdList = await readCli(' Server IDs (sep. by ,): ')
         serverIdList = serverIdList.split(',')
 
-        for(var id in serverIdList)
-        {
-            if(parseInt(serverIdList[id]) == NaN)
-            {
+        for (var id in serverIdList) {
+            if (Number.isNaN(serverIdList[id])) {
                 idValid = false
             }
 
-            if(!checkForId(Servers, serverIdList[id]))
-            {
+            if (!checkForId(Servers, serverIdList[id])) {
                 idValid = false
             }
         }
-    } while(!idValid)
+    } while (!idValid)
 
     var command
 
-    do
-    {
+    do {
         var execCommand = true
 
         await mainList()
@@ -397,14 +356,12 @@ async function cluCom(Servers)
         await mainList()
         console.log('------------- CLUSTER COMMAND --------------\n')
         var execOpt = await readCli(' Do you want to execute "' + command + '" on every selected server (y/n): ')
-        if(execOpt != 'y')
-        {
+        if (execOpt != 'y') {
             execCommand = false
         }
-    } while(!execCommand)
+    } while (!execCommand)
 
-    for(var id in serverIdList)
-    {
+    for (var id in serverIdList) {
         console.log(Servers[idToServer(Servers, serverIdList[id])]['ip'])
         console.log(idToServer(Servers, serverIdList[id]))
 
@@ -415,14 +372,12 @@ async function cluCom(Servers)
     }
 }
 
-async function exitScr(Servers)
-{
+async function exitScr(Servers: any) {
     console.clear()
     console.log('\n Left the ssh manager script')
 }
 
-function OptToFunc(option)
-{
+function OptToFunc(option: string): any {
     const funcList = {
         'ConServer': conToServer,
         'ConSFTP': conSFTP,
@@ -436,25 +391,22 @@ function OptToFunc(option)
     return funcList[option]
 }
 
-async function main()
-{
-    while(true)
-    {
-        var optionsMessage = ' Please choose one of the above'
-        
+async function main() {
+    while (true) {
+        var optionsMessage: string = ' Please choose one of the above'
+
         do {
             var { savedServers, configPresent } = await mainList()
             var options = await listOptions(configPresent)
             displayMessage(optionsMessage)
-            var option = await readCli(' - ')
-        } while(idToOption(options, option) == 'invOpt')
+            var option: string = await readCli(' - ')
+        } while (idToOption(options, option) == 'invOpt')
 
-        optFunc = await OptToFunc(idToOption(options, option))
+        let optFunc = await OptToFunc(idToOption(options, option))
 
         await optFunc(savedServers)
 
-        if(idToOption(options, option) == 'Exit')
-        {
+        if (idToOption(options, option) == 'Exit') {
             exit();
         }
     }
