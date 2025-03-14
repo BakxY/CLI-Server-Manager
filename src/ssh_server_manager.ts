@@ -396,7 +396,7 @@ async function main() {
             case 'DelServer': await delServer(savedServers); break;
             case 'CluCom': await cluCom(savedServers); break;
             case 'Exit': await exitScr(savedServers); break;
-            default: break;
+            default: break
         }
 
         if (idToOption(options, option) == 'Exit') {
