@@ -234,7 +234,7 @@ function checkForId(Servers: any, id: string) {
     return false
 }
 
-function idToServer(Servers: any, id: string) : string {
+function idToServer(Servers: any, id: string): string {
     for (var server in Servers) {
         if (Number.parseInt(Servers[server]['id']) === Number.parseInt(id)) {
             return server
@@ -377,20 +377,6 @@ async function exitScr(Servers: any) {
     console.log('\n Left the ssh manager script')
 }
 
-function OptToFunc(option: string): any {
-    const funcList = {
-        'ConServer': conToServer,
-        'ConSFTP': conSFTP,
-        'AddServer': addServer,
-        'InfServer': infoServer,
-        'DelServer': delServer,
-        'CluCom': cluCom,
-        'Exit': exitScr
-    }
-
-    return funcList[option]
-}
-
 async function main() {
     while (true) {
         var optionsMessage: string = ' Please choose one of the above'
@@ -402,9 +388,16 @@ async function main() {
             var option: string = await readCli(' - ')
         } while (idToOption(options, option) == 'invOpt')
 
-        let optFunc = await OptToFunc(idToOption(options, option))
-
-        await optFunc(savedServers)
+        switch (idToOption(options, option)) {
+            case 'ConServer': await conToServer(savedServers); break;
+            case 'ConSFTP': await conSFTP(savedServers); break;
+            case 'AddServer': await addServer(savedServers); break;
+            case 'InfServer': await infoServer(savedServers); break;
+            case 'DelServer': await delServer(savedServers); break;
+            case 'CluCom': await cluCom(savedServers); break;
+            case 'Exit': await exitScr(savedServers); break;
+            default: break;
+        }
 
         if (idToOption(options, option) == 'Exit') {
             exit();
