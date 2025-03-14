@@ -2,9 +2,9 @@
 
 A tool for managing connections via ssh and sftp to your servers.
 
-![Main-Menu](img/main_menu.png)
+![Main-Menu](./docs/main_menu.png)
 
-![Server-Info](img/server_info.png)
+![Server-Info](./docs/server_info.png)
 
 ## Installation
 
