@@ -6,6 +6,17 @@ A tool for managing connections via ssh and sftp to your servers.
 
 ![Server-Info](img/server_info.png)
 
+## Installation
+
+If you are planing to utilize the SFTP features provided by the utility you need to place a WinSCP binary in the installation folder of this utility.
+
+* Open you browser and navigate to the [WinSCP download page](https://winscp.net/eng/downloads.php).
+* Scroll down until you see the "Portable executables" download button and clock on it.
+* After some seconds a ZIP file should be downloaded. 
+* Extract the WinSCP binary from that ZIP folder to the installation folder of this utility.
+
+You are now ready to use the SFTP features of this utility.
+
 ## Why?
 
 I used Putty for managing my servers since I started working with servers. As I got more and more into the linux, I learned the power of just a keyboard and how it can boost productivity. With Putty I had to use my mouse to connect to servers. So I created this tool to easily connect to my server trough a CLI tool. 
