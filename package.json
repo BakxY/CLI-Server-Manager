@@ -14,12 +14,10 @@
     },
     "homepage": "https://github.com/BakxY/CLI-Server-Manager#readme",
     "scripts": {
-        "clean": "shx rm -rf out",
-        "watch": "npm run build-prepare & tsc-watch -p ./",
-        "lint": "eslint src --ext ts",
-        "pretest": "npm run compile && npm run lint",
-        "esbuild-base": "npm run clean && esbuild ./src/ssh_server_manager.ts --bundle --outfile=out/ssh_server_manager.js --format=cjs --platform=node",
-        "debug-esbuild": "npm run clean && node --inspect-brk out/ssh_server_manager.js"
+        "build": "esbuild --bundle --platform=node --minify --format=cjs src/**/*.ts --outdir=out",
+        "build-debug": "esbuild --bundle --platform=node --sourcemap --keep-names --format=cjs src/**/*.ts --outdir=out",
+        "watch": "esbuild --bundle --platform=node --sourcemap --keep-names --watch --format=cjs src/**/*.ts --outdir=out",
+        "exe": "node out/ssh_server_manager.js"
     },
     "devDependencies": {
         "@types/node": "^22.13.10",
