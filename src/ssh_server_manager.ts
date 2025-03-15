@@ -1,10 +1,8 @@
-import { Function } from "estree"
-
-const fs = require('fs')
-const os = require('os')
-const { exit } = require('process')
-const { exec } = require("child_process")
-const readline = require('readline')
+import * as fs from 'fs';
+import * as os from 'os';
+import { exit } from 'process';
+import { exec } from 'child_process';
+import * as readline from 'readline';
 
 const regexExp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/gi
 
@@ -41,7 +39,7 @@ async function readCli(question: string): Promise<string> {
 }
 
 async function sleep(time: number): Promise<unknown> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         setTimeout(resolve, time)
     })
 }
