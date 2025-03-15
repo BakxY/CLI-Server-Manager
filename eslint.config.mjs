@@ -26,5 +26,7 @@ export default [{
         semi: "warn",
         "no-unused-vars": "warn",
         "prefer-const": "error",
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/explicit-function-return-type": "warn",
     },
 }];

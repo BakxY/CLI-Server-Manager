@@ -44,7 +44,7 @@ async function sleep(time: number): Promise<unknown> {
     });
 }
 
-async function mainList() {
+async function mainList(): Promise<{savedServers: savedServers; configPresent: boolean}> {
     console.clear();
     console.log('------------ SSH SERVER MANAGER ------------\n');
 
@@ -79,7 +79,7 @@ async function mainList() {
     return { savedServers: savedServers, configPresent: configPresent };
 }
 
-async function listOptions(configPresent: boolean) {
+async function listOptions(configPresent: boolean): Promise<string[]> {
     /* 
     * All Options:
     * ConServer = Connect to server
@@ -137,7 +137,7 @@ function idToOption(options: string[], id: string): string {
     }
 }
 
-async function displayMessage(message: string) {
+async function displayMessage(message: string): Promise<void> {
     console.log('\n' + message);
 }
 
@@ -161,7 +161,7 @@ async function conToServer(Servers: savedServers): Promise<void> {
     exec("start cmd /c ssh " + Servers[idToServer(Servers, serverId)]['user'] + "@" + Servers[idToServer(Servers, serverId)]['ip']);
 }
 
-async function conSFTP(Servers: savedServers) {
+async function conSFTP(Servers: savedServers): Promise<void> {
     let serverId: string = '';
     let idValid: boolean = true;
 
@@ -181,7 +181,7 @@ async function conSFTP(Servers: savedServers) {
     exec("WinSCP.exe " + Servers[idToServer(Servers, serverId)]['user'] + "@" + Servers[idToServer(Servers, serverId)]['ip'] + ' /privatekey=' + SSHPrivateKeyPath);
 }
 
-async function addServer(savedServers: savedServers) {
+async function addServer(savedServers: savedServers): Promise<void> {
     let getInfoMessage: string = '\n';
     const serverName: string = '';
 
@@ -233,7 +233,7 @@ async function addServer(savedServers: savedServers) {
     displayMessage(getInfoMessage);
 }
 
-function checkForId(Servers: savedServers, id: string) {
+function checkForId(Servers: savedServers, id: string): boolean {
     for (const server in Servers) {
         if (Servers[server]['id'] === Number.parseInt(id)) {
             return true;
@@ -251,7 +251,7 @@ function idToServer(Servers: savedServers, id: string): string {
     return '';
 }
 
-async function infoServer(Servers: savedServers) {
+async function infoServer(Servers: savedServers): Promise<void> {
     let serverId: string = '';
     let idValid: boolean = true;
 
@@ -279,7 +279,7 @@ async function infoServer(Servers: savedServers) {
     await readCli('');
 }
 
-async function delServer(Servers: savedServers) {
+async function delServer(Servers: savedServers): Promise<void> {
     let serverId: string = '';
     let idValid: boolean = true;
     do {
@@ -331,7 +331,7 @@ async function delServer(Servers: savedServers) {
     await sleep(500);
 }
 
-async function cluCom(Servers: savedServers) {
+async function cluCom(Servers: savedServers): Promise<void> {
     let serverIdList: string[];
     let idValid: boolean = true;
 
@@ -378,12 +378,12 @@ async function cluCom(Servers: savedServers) {
     }
 }
 
-async function exitScr() {
+async function exitScr(): Promise<void> {
     console.clear();
     console.log('\n Left the ssh manager script');
 }
 
-async function main() {
+async function main(): Promise<void> {
     while (true) {
         const optionsMessage: string = ' Please choose one of the above';
         let option: string = '';
