@@ -81,7 +81,7 @@ async function mainList() {
     return { savedServers: savedServers, configPresent: configPresent }
 }
 
-async function listOptions(configPresent: any) {
+async function listOptions(configPresent: boolean) {
     /* 
     * All Options:
     * ConServer = Connect to server
@@ -95,7 +95,7 @@ async function listOptions(configPresent: any) {
     console.log('----------------- OPTIONS ------------------\n')
 
     let optionId = 1
-    let options: any = {}
+    let options: string[] = []
 
     if (configPresent) {
         console.log(' ' + optionId + ': Connect to server via SSH')
@@ -130,9 +130,9 @@ async function listOptions(configPresent: any) {
     return options
 }
 
-function idToOption(options: any, id: string): string {
+function idToOption(options: string[], id: string): string {
     if (options.hasOwnProperty(id)) {
-        return options[id]
+        return options[Number.parseInt(id)]
     }
     else {
         return 'invOpt'
@@ -143,7 +143,7 @@ async function displayMessage(message: string) {
     console.log('\n' + message)
 }
 
-async function conToServer(Servers: any): Promise<void> {
+async function conToServer(Servers: savedServers): Promise<void> {
     let serverId: string = ''
     let idValid: boolean = true
 
@@ -163,7 +163,7 @@ async function conToServer(Servers: any): Promise<void> {
     exec("start cmd /c ssh " + Servers[idToServer(Servers, serverId)]['user'] + "@" + Servers[idToServer(Servers, serverId)]['ip'])
 }
 
-async function conSFTP(Servers: any) {
+async function conSFTP(Servers: savedServers) {
     let serverId: string = ''
     let idValid: boolean = true
 
@@ -183,7 +183,7 @@ async function conSFTP(Servers: any) {
     exec("WinSCP.exe " + Servers[idToServer(Servers, serverId)]['user'] + "@" + Servers[idToServer(Servers, serverId)]['ip'] + ' /privatekey=' + SSHPrivateKeyPath)
 }
 
-async function addServer(savedServers: any) {
+async function addServer(savedServers: savedServers) {
     let getInfoMessage: string = '\n'
     let serverName: string = '';
 
@@ -224,6 +224,7 @@ async function addServer(savedServers: any) {
     getInfoMessage = '\n\n Server name: ' + serverName + '\n Server IP: ' + serverIp + '\n Username: ' + serverIp + '\n\n Server was saved to config file'
 
     savedServers[serverName] = {
+        'id': NaN,
         'ip': serverIp,
         'user': serverUsername
     }
@@ -234,25 +235,25 @@ async function addServer(savedServers: any) {
     displayMessage(getInfoMessage)
 }
 
-function checkForId(Servers: any, id: string) {
+function checkForId(Servers: savedServers, id: string) {
     for (let server in Servers) {
-        if (Number.parseInt(Servers[server]['id']) === Number.parseInt(id)) {
+        if (Servers[server]['id'] === Number.parseInt(id)) {
             return true
         }
     }
     return false
 }
 
-function idToServer(Servers: any, id: string): string {
+function idToServer(Servers: savedServers, id: string): string {
     for (let server in Servers) {
-        if (Number.parseInt(Servers[server]['id']) === Number.parseInt(id)) {
+        if (Servers[server]['id'] === Number.parseInt(id)) {
             return server
         }
     }
     return ''
 }
 
-async function infoServer(Servers: any) {
+async function infoServer(Servers: savedServers) {
     let serverId: string = ''
     let idValid: boolean = true
 
@@ -280,7 +281,7 @@ async function infoServer(Servers: any) {
     await readCli('')
 }
 
-async function delServer(Servers: any) {
+async function delServer(Servers: savedServers) {
     let serverId: string = ''
     let idValid: boolean = true
     do {
@@ -332,15 +333,14 @@ async function delServer(Servers: any) {
     await sleep(500)
 }
 
-async function cluCom(Servers: any) {
-    let serverIdList: any
+async function cluCom(Servers: savedServers) {
+    let serverIdList: string[]
     let idValid: boolean = true
 
     do {
         await mainList()
         console.log('------------- CLUSTER COMMAND --------------\n')
-        serverIdList = await readCli(' Server IDs (sep. by ,): ')
-        serverIdList = serverIdList.split(',')
+        serverIdList = (await readCli(' Server IDs (sep. by ,): ')).split(',')
 
         for (let id in serverIdList) {
             if (Number.isNaN(serverIdList[id])) {
@@ -380,7 +380,7 @@ async function cluCom(Servers: any) {
     }
 }
 
-async function exitScr(Servers: any) {
+async function exitScr(Servers: savedServers) {
     console.clear()
     console.log('\n Left the ssh manager script')
 }
@@ -389,7 +389,7 @@ async function main() {
     while (true) {
         let optionsMessage: string = ' Please choose one of the above'
         let option: string = ''
-        let options: any
+        let options: string[] = []
         let savedServers: savedServers = {}
         let configPresent: boolean = false
 
