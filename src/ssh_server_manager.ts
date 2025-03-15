@@ -33,7 +33,7 @@ function isIp(str: string): boolean {
 }
 
 async function readCli(question: string): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         rl.question(question, resolve);
     });
 }
@@ -60,7 +60,7 @@ async function mainList() {
 
         let id: number = 1;
 
-        for (let server in localSavedServers) {
+        for (const server in localSavedServers) {
             savedServers[server] = localSavedServers[server];
             savedServers[server]['id'] = id;
             console.log(' ' + id + ': ' + server);
@@ -93,7 +93,7 @@ async function listOptions(configPresent: boolean) {
     console.log('----------------- OPTIONS ------------------\n');
 
     let optionId: number = 1;
-    let options: string[] = [];
+    const options: string[] = [];
 
     if (configPresent) {
         console.log(' ' + optionId + ': Connect to server via SSH');
@@ -183,13 +183,13 @@ async function conSFTP(Servers: savedServers) {
 
 async function addServer(savedServers: savedServers) {
     let getInfoMessage: string = '\n';
-    let serverName: string = '';
+    const serverName: string = '';
 
     do {
         await mainList();
         console.log('------------- ADD NEW SERVER ---------------');
         displayMessage(getInfoMessage);
-        let serverName = await readCli(' Server name: ');
+        const serverName = await readCli(' Server name: ');
 
         getInfoMessage = ' Name is already in use!\n';
         if (onlySpaces(serverName)) {
@@ -217,7 +217,7 @@ async function addServer(savedServers: savedServers) {
     await mainList();
     console.log('------------- ADD NEW SERVER ---------------');
     displayMessage(getInfoMessage);
-    let serverUsername = await readCli(' Server Username: ');
+    const serverUsername = await readCli(' Server Username: ');
 
     getInfoMessage = '\n\n Server name: ' + serverName + '\n Server IP: ' + serverIp + '\n Username: ' + serverIp + '\n\n Server was saved to config file';
 
@@ -234,7 +234,7 @@ async function addServer(savedServers: savedServers) {
 }
 
 function checkForId(Servers: savedServers, id: string) {
-    for (let server in Servers) {
+    for (const server in Servers) {
         if (Servers[server]['id'] === Number.parseInt(id)) {
             return true;
         }
@@ -243,7 +243,7 @@ function checkForId(Servers: savedServers, id: string) {
 }
 
 function idToServer(Servers: savedServers, id: string): string {
-    for (let server in Servers) {
+    for (const server in Servers) {
         if (Servers[server]['id'] === Number.parseInt(id)) {
             return server;
         }
@@ -273,7 +273,7 @@ async function infoServer(Servers: savedServers) {
 
     const server = idToServer(Servers, serverId);
 
-    let optionsMessage = ' Name: ' + server + '\n IP: ' + Servers[server]['ip'] + '\n User: ' + Servers[server]['user'];
+    const optionsMessage = ' Name: ' + server + '\n IP: ' + Servers[server]['ip'] + '\n User: ' + Servers[server]['user'];
 
     displayMessage(optionsMessage);
     await readCli('');
@@ -298,15 +298,15 @@ async function delServer(Servers: savedServers) {
     let delOpt: string;
     let server: string;
 
-    do {
-        let idValid: boolean = true;
+    idValid = true;
 
+    do {
         await mainList();
         console.log('-------------- DELETE SERVER ---------------');
 
         server = idToServer(Servers, serverId);
 
-        let optionsMessage = ' Name: ' + server + '\n IP: ' + Servers[server]['ip'];
+        const optionsMessage = ' Name: ' + server + '\n IP: ' + Servers[server]['ip'];
 
         displayMessage(optionsMessage);
         delOpt = await readCli('\n Delete this server (y/n): ');
@@ -340,7 +340,7 @@ async function cluCom(Servers: savedServers) {
         console.log('------------- CLUSTER COMMAND --------------\n');
         serverIdList = (await readCli(' Server IDs (sep. by ,): ')).split(',');
 
-        for (let id in serverIdList) {
+        for (const id in serverIdList) {
             if (Number.isNaN(serverIdList[id])) {
                 idValid = false;
             }
@@ -361,31 +361,31 @@ async function cluCom(Servers: savedServers) {
 
         await mainList();
         console.log('------------- CLUSTER COMMAND --------------\n');
-        let execOpt = await readCli(' Do you want to execute "' + command + '" on every selected server (y/n): ');
+        const execOpt = await readCli(' Do you want to execute "' + command + '" on every selected server (y/n): ');
         if (execOpt !== 'y') {
             execCommand = false;
         }
     } while (!execCommand);
 
-    for (let id in serverIdList) {
+    for (const id in serverIdList) {
         console.log(Servers[idToServer(Servers, serverIdList[id])]['ip']);
         console.log(idToServer(Servers, serverIdList[id]));
 
-        let titleString = 'Cluster command on ' + idToServer(Servers, serverIdList[id]);
-        let conString = 'cmd /k "echo off && cls && ssh ' + Servers[idToServer(Servers, serverIdList[id])]['user'] + '@' + Servers[idToServer(Servers, serverIdList[id])]['ip'];
+        const titleString: string = 'Cluster command on ' + idToServer(Servers, serverIdList[id]);
+        const conString: string = 'cmd /k "echo off && cls && ssh ' + Servers[idToServer(Servers, serverIdList[id])]['user'] + '@' + Servers[idToServer(Servers, serverIdList[id])]['ip'];
 
         exec('start "' + titleString + '" ' + conString + ' ' + command + '; echo ------------------- DONE -------------------; exit"');
     }
 }
 
-async function exitScr(Servers: savedServers) {
+async function exitScr() {
     console.clear();
     console.log('\n Left the ssh manager script');
 }
 
 async function main() {
     while (true) {
-        let optionsMessage: string = ' Please choose one of the above';
+        const optionsMessage: string = ' Please choose one of the above';
         let option: string = '';
         let options: string[] = [];
         let savedServers: savedServers = {};
@@ -405,7 +405,7 @@ async function main() {
             case 'InfServer': await infoServer(savedServers); break;
             case 'DelServer': await delServer(savedServers); break;
             case 'CluCom': await cluCom(savedServers); break;
-            case 'Exit': await exitScr(savedServers); break;
+            case 'Exit': await exitScr(); break;
             default: break;
         }
 
